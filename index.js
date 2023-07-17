@@ -130,10 +130,10 @@ async function run() {
         })
 
 
-    //     app.get('/instractor', (req, res) => {
-    //         const result = 
-    //   const instractor = await userCollection.find()
-    //     })
+        //     app.get('/instractor', (req, res) => {
+        //         const result = 
+        //   const instractor = await userCollection.find()
+        //     })
 
 
         app.get('/user/instractor/:email', verifyJWT, async (req, res) => {
@@ -165,7 +165,12 @@ async function run() {
         });
 
 
-        app.get('/users',  async  (req, res) => {
+
+        app.get("/health", async (req, res) => {
+            res.send("surver is ok")
+        })
+
+        app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result)
         })
@@ -198,11 +203,55 @@ async function run() {
 
 
 
-        // get all course
-        app.get("/allcourse", async (req, res) => {
-            const result = await courseCollection.find().toArray();
-            res.send(result);
+        // get all course Count
+        app.get("/allcoursecount", async (req, res) => {
+            const result = await courseCollection.estimatedDocumentCount()
+            res.send({result});
         });
+
+
+
+
+        app.get("/allcourse/:category", async (req, res) => {
+            try {
+                const category = req.params.category;
+
+                if (category === 'all') {
+                    const result = await courseCollection.find().toArray();
+                    res.send(result);
+                } else {
+                    const result = await courseCollection.find({ category }).toArray();
+                    res.send(result);
+                }
+            } catch (error) {
+                console.error(error);
+                res.status(500).send("Internal Server Error");
+            }
+        });
+
+
+
+
+        app.get("/allcourses/:id", async (req, res) => {
+            try {
+              const id = req.params.id;
+              console.log(id);
+              const query = { _id: new ObjectId(id) };
+              const result = await courseCollection.findOne(query);
+              
+              if (result) {
+                res.send(result);
+              } else {
+                res.status(404).send("Course not found");
+              }
+            } catch (error) {
+              console.error(error);
+              res.status(500).send("Internal Server Error");
+            }
+          });
+          
+
+
 
 
         app.get('/update/:id', async (req, res) => {
